@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from asyncio_mqtt import Client as MqttClient
 import paho.mqtt.publish as publish
 from vw_connection import Connection
+import datetime
 
 VW_USERNAME = os.getenv("VW_USERNAME")
 VW_PASSWORD = os.getenv("VW_PASSWORD")
@@ -14,13 +15,20 @@ MQTT_HOST = os.getenv("MQTT_HOST")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 INTERVAL = int(os.getenv("INTERVAL", 300))
 
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, z):
+        if isinstance(z, datetime.datetime):
+            return (str(z))
+        else:
+            return super().default(z)
+
 
 async def publish_vehicle(vehicle):
     uid = vehicle.unique_id
     topic = "vwcarnet/" + uid
 
     async with MqttClient(MQTT_HOST, MQTT_PORT) as mqtt:
-        await mqtt.publish(topic, json.dumps(vehicle.attrs))
+        await mqtt.publish(topic, json.dumps(vehicle.attrs, cls=DateTimeEncoder))
 
 
 async def main():
