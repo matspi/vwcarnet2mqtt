@@ -1,2 +1,3 @@
-git+git://GitHub.com/matspi/volkswagencarnet/@master#egg=volkswagencarnet
+volkswagencarnet
 asyncio-mqtt
+cryptography

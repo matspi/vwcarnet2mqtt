@@ -1,4 +1,4 @@
-import volkswagencarnet
+
 import os
 import asyncio
 import pprint
@@ -6,7 +6,7 @@ import json
 from aiohttp import ClientSession
 from asyncio_mqtt import Client as MqttClient
 import paho.mqtt.publish as publish
-from volkswagencarnet.vw_connection import Connection
+from vw_connection import Connection
 
 VW_USERNAME = os.getenv("VW_USERNAME")
 VW_PASSWORD = os.getenv("VW_PASSWORD")
@@ -27,7 +27,7 @@ async def main():
     async with ClientSession(headers={'Connection': 'keep-alive'}) as session:
         connection = Connection(
             session, VW_USERNAME, VW_PASSWORD)
-        if await connection._login():
+        if await connection.doLogin():
             while True:
                 if await connection.update():
                     for vehicle in connection.vehicles:
