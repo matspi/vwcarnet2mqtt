@@ -16,13 +16,13 @@ MQTT_HOST = os.getenv("MQTT_HOST")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 INTERVAL = int(os.getenv("INTERVAL", 300))
 
+
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, z):
         if isinstance(z, datetime.datetime):
             return (str(z))
         else:
             return super().default(z)
-
 
 
 async def publish_vehicle(vehicle):
@@ -34,7 +34,7 @@ async def publish_vehicle(vehicle):
 
     async with MqttClient(MQTT_HOST, MQTT_PORT) as mqtt:
         for key in data:
-            await mqtt.publish(topic + "/" + key, json.dumps(data[key], cls=DateTimeEncoder))
+            await mqtt.publish(base_topic + "/" + key, json.dumps(data[key], cls=DateTimeEncoder))
 
 
 async def main():
@@ -48,7 +48,6 @@ async def main():
                         await publish_vehicle(vehicle)
 
                 await asyncio.sleep(INTERVAL)
-
 
 
 if __name__ == "__main__":
