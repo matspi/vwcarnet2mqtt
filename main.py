@@ -8,6 +8,7 @@ from asyncio_mqtt import Client as MqttClient
 import paho.mqtt.publish as publish
 from vw_connection import Connection
 import datetime
+import pandas as pd
 
 VW_USERNAME = os.getenv("VW_USERNAME")
 VW_PASSWORD = os.getenv("VW_PASSWORD")
@@ -23,12 +24,17 @@ class DateTimeEncoder(json.JSONEncoder):
             return super().default(z)
 
 
+
 async def publish_vehicle(vehicle):
     uid = vehicle.unique_id
-    topic = "vwcarnet/" + uid
+    base_topic = "vwcarnet/" + uid
+
+    data = vehicle.attrs
+    data = pd.json_normalize(data, sep='/').to_dict(orient='records')[0]
 
     async with MqttClient(MQTT_HOST, MQTT_PORT) as mqtt:
-        await mqtt.publish(topic, json.dumps(vehicle.attrs, cls=DateTimeEncoder))
+        for key in data:
+            await mqtt.publish(topic + "/" + key, json.dumps(data[key], cls=DateTimeEncoder))
 
 
 async def main():
@@ -39,7 +45,6 @@ async def main():
             while True:
                 if await connection.update():
                     for vehicle in connection.vehicles:
-                        a = vehicle.attrs
                         await publish_vehicle(vehicle)
 
                 await asyncio.sleep(INTERVAL)
@@ -48,3 +53,5 @@ async def main():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
+
+# %%
